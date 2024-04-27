@@ -2,24 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Barang;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
-class BarangController extends Controller
+class OrderController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        Log::debug('This is an BarangController call.');
-        $barang = Barang::orderBy('name', 'asc')->get();
+        $orders = Order::orderBy('id', 'desc')->get();
+        Log::debug($orders);
 
-        return view('barang.barang', [
-            'barang' => $barang
+        return view('order.order', [
+            'orders' => $orders
         ]);
     }
 
@@ -108,5 +108,11 @@ class BarangController extends Controller
             Alert::warning('Error', 'Cant deleted, Barang already used !');
             return redirect('/barang');
         }
+    }
+
+    public function orders()
+    {
+        $orders = Order::all();
+        return response()->json($orders);
     }
 }

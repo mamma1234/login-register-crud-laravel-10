@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,3 +29,4 @@ Route::get('/', [DashboardController::class, 'index'])->middleware('auth');
 
 //route barang
 Route::resource('/barang', BarangController::class)->middleware('auth');
+Route::resource('/order', OrderController::class)->middleware('auth');

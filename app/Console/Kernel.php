@@ -4,15 +4,17 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
-    /**
-     * Define the application's command schedule.
-     */
+    // protected $commands = [
+    //     'App\Console\Commands\DispatchTwentyFour'
+    // ];
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
+        $schedule->command('twentyFour:dispatch')->everyMinute();
     }
 
     /**

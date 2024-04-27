@@ -7,12 +7,13 @@ use RealRashid\SweetAlert\Facades\Alert;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
     public function index()
     {
-
+        Log::debug('This is an information message.');
         return view('auth.login', [
             'title' => 'Login',
         ]);
