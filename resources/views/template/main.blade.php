@@ -39,11 +39,16 @@
                     <a href="/" class="nav-link">Dashboard</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/" class="nav-link">Order</a>
+                    <a href="/order" class="nav-link">Order</a>
                 </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="/manage" class="nav-link">Manage</a>
+                </li>
+<!--
                 <li class="nav-item d-none d-sm-inline-block">
                     <a href="/" class="nav-link">Barang</a>
                 </li>
+-->
             </ul>
 
             <!-- Right navbar links -->
@@ -232,13 +237,21 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="/manage" class="nav-link">
+                                <i class="nav-icon fa-solid fa-box"></i>
+                                <p>
+                                    Manage
+                                </p>
+                            </a>
+                        </li>
+                        <!-- <li class="nav-item">
                             <a href="/barang" class="nav-link">
                                 <i class="nav-icon fa-solid fa-box"></i>
                                 <p>
                                     Barang
                                 </p>
                             </a>
-                        </li>
+                        </li> -->
                         <li class="nav-item">
                             <a class="log-out ml-3" href="#" class="nav-link">
                                 <i class="nav-icon fa-solid fa-power-off" style="color: red;"></i>

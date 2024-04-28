@@ -6,6 +6,7 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Log;
+use App\Services\TwentyFourService;
 use Exception;
 
 class OrderController extends Controller
@@ -15,8 +16,17 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::orderBy('id', 'desc')->get();
-        Log::debug($orders);
+        $orders = Order::leftjoin('dispatches', 'dispatches.order_id', 'orders.id')
+            ->select([
+                'orders.*',
+                'dispatches.car_number as dispatch_car_number',
+                'dispatches.car_ton as dispatch_car_ton',
+                'dispatches.car_type as dispatch_car_type',
+                'dispatches.car_load_option as dispatch_car_load_option'
+            ])
+            ->get();
+
+        // Log::debug($orders);
 
         return view('order.order', [
             'orders' => $orders
@@ -28,7 +38,7 @@ class OrderController extends Controller
      */
     public function create()
     {
-        return view('barang.barang-add');
+        return view('order.order-add');
     }
 
     /**
@@ -37,24 +47,41 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|max:100|unique:barangs',
-            'category' => 'required',
-            'supplier' => 'required',
-            'stock' => 'required',
-            'price' => 'required',
-            'note' => 'max:1000',
+            'start_address_siNm' => 'required',
+            'start_address_sggNm' => 'required',
+            'start_address_emdNm' => 'required',
+            'start_address_detail' => 'required',
+            'end_address_siNm' => 'required',
+            'end_address_sggNm' => 'max:1000',
+            'end_address_emdNm' => 'max:1000',
+            'end_address_detail' => 'max:1000',
         ]);
 
-        $barang = Barang::create($request->all());
+        Log::debug($request->all());
+        $order = Order::create($request->all());
 
-        Alert::success('Success', 'Barang has been saved !');
-        return redirect('/barang');
+        try {
+            $response = (new TwentyFourService)->setOrder($order->id);
+            Log::debug($response);
+            $order->update([
+                'twentyfour_order_no' => $response['ordNo'],
+                'twentyfour_error_msg' => null
+            ]);
+        } catch (Exception $e) {
+            \Log::error($e->getMessage());
+            $order->update([
+                'twentyfour_error_msg' => $e->getMessage(),
+            ]);
+        }
+
+        Alert::success('Success', '(' .$order->id . ') Order has been saved ! ');
+        return redirect('/order');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Barang $barang)
+    public function show(Order $order)
     {
         //
     }
@@ -62,51 +89,80 @@ class OrderController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id_barang)
+    public function edit($id)
     {
-        $barang = barang::findOrFail($id_barang);
+        $order = Order::leftjoin('dispatches', 'dispatches.order_id', 'orders.id')
+            ->where('orders.id', $id)
+            ->select([
+                'orders.*',
+                'dispatches.car_number as dispatch_car_number',
+                'dispatches.car_ton as dispatch_car_ton',
+                'dispatches.car_type as dispatch_car_type',
+                'dispatches.car_load_option as dispatch_car_load_option'
+            ])
+            ->firstOrFail();
 
-        return view('barang.barang-edit', [
-            'barang' => $barang,
+        return view('order.order-edit', [
+            'order' => $order,
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id_barang)
+    public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'name' => 'required|max:100|unique:barangs,name,' . $id_barang . ',id_barang',
-            'category' => 'required',
-            'supplier' => 'required',
-            'stock' => 'required',
-            'price' => 'required',
-            'note' => 'max:1000',
+            'start_address_siNm' => 'required',
+            'start_address_sggNm' => 'required',
+            'start_address_emdNm' => 'required',
+            'start_address_detail' => 'required',
+            'end_address_siNm' => 'required',
+            'end_address_sggNm' => 'max:1000',
+            'end_address_emdNm' => 'max:1000',
+            'end_address_detail' => 'max:1000',
         ]);
+        Log::debug($request->all());
 
-        $barang = Barang::findOrFail($id_barang);
-        $barang->update($validated);
+        $order = Order::findOrFail($id);
+        // $order->update($validated);
+        $order->update($request->all());
 
-        Alert::info('Success', 'Barang has been updated !');
-        return redirect('/barang');
+        if ( empty($order->twentyfour_order_no) ) {
+            try {
+                $response = (new TwentyFourService)->setOrder($order->id);
+                Log::debug($response);
+                $order->update([
+                    'twentyfour_order_no' => $response['ordNo'],
+                    'twentyfour_error_msg' => null
+                ]);
+            } catch (Exception $e) {
+                \Log::error($e->getMessage());
+                $order->update([
+                    'twentyfour_error_msg' => $e->getMessage(),
+                ]);
+            }
+        }
+        
+        Alert::info('Success', '(' .$order->id . ') Order has been updated !');
+        return redirect('/order');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id_barang)
+    public function destroy($id)
     {
         try {
-            $deletedbarang = Barang::findOrFail($id_barang);
+            $deletedorder = Order::findOrFail($id);
+            $deletedorder->delete();
 
-            $deletedbarang->delete();
-
-            Alert::error('Success', 'Barang has been deleted !');
-            return redirect('/barang');
+            Alert::error('Success', '(' .$deletedorder
+            ->id . ') Order has been deleted !');
+            return redirect('/order');
         } catch (Exception $ex) {
-            Alert::warning('Error', 'Cant deleted, Barang already used !');
-            return redirect('/barang');
+            Alert::warning('Error', 'Cant deleted, Order already used !');
+            return redirect('/order');
         }
     }
 

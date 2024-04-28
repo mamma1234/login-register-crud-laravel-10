@@ -4,6 +4,7 @@ namespace App\Services;
 
 
 use App\Models\Dispatch;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Log;
@@ -65,7 +66,60 @@ class TwentyFourService
 }
 */
 
+    public function setOrder($id)
+    {
+        $order = Order::findOrFail($id);
+        $json = [
+            "startWide" => $order->start_address_siNm ,
+            "startSgg" => $order->start_address_sggNm ,
+            "startDong" => $order->start_address_emdNm ,
+            "startDetail" => $order->start_address_detail ,
+            "endWide" => $order->end_address_siNm ,
+            "endSgg" => $order->end_address_sggNm ,
+            "endDong" => $order->end_address_emdNm ,
+            "endDetail" => $order->end_address_detail ,
+            "multiCargoGub" => $order->is_mix ? "홍적" : "" ,
+            "urgent" => $order->is_urgent ? "긴급" : "" ,
+            "shuttleCargoInfo" => $order->is_round ? "왕복" : "" ,
+            "cargoTon" => $order->car_ton ,
+            "truckType" => $order->car_type ,
+            "frgton" => $order->freight_ton ,
+            "startPlanDt" => $order->start_date ,
+            "endPlanDt" => $order->end_date ,
+            "startLoad" => $order->start_work ,
+            "endLoad" => $order->end_work ,
+            "cargoDsc" => $order->freight_desc ,
+            "farePaytype" => $order->fare_pay_type ,
+            "fare" => $order->fare ,
+            "fee" => $order->fee ?? 0,
+            "endAreaPhone" => $order->end_phone_number ,
+            "firstType" => $order->user_type ?? '',
+            "firstShipperNm" => $order->shipper_name ?? '',
+            "firstShipperInfo" => $order->shipper_phone_number ?? '',
+            "firstShipperBizNo" => $order->shipper_biz_number ?? '',
+            "taxbillType" => $order->is_tax_invoice ? "Y" : "N" ,
+            "payPlanYmd" => $order->pay_due_date ?? '',
+            "ddID" => '', // "70173",
+        ];
+        Log::debug($json);
+        $json = json_encode($json, JSON_UNESCAPED_UNICODE);
+        $json = $this->pkcs5Pad($json);
+        $data = openssl_encrypt($json, 'AES-256-CBC', $this->passphrase, 0, $this->iv);
+        $params = [
+            "data" => $data
+        ];
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'call24-api-key' => $this->apiKey
+        ])->post($this->apiUrl . '/order/addOrder', $params);
+        if ($response['code'] != 1) {
+            throw new Exception($response['message']);
+        }
+        $data = $response['data'];
+        $decryptedData = openssl_decrypt($data, 'AES-256-CBC', $this->passphrase, 0, $this->iv);
 
+        return json_decode($decryptedData, true);
+    }
 
     public function getCarTon()
     {
@@ -77,9 +131,9 @@ class TwentyFourService
             'Content-Type' => 'application/json',
             'call24-api-key' => $this->apiKey
         ])->post($this->apiUrl . '/order/cargoTon', $params);
-
-
-        $data = $response['data'];
+        if ($response['code'] != 1) {
+            throw new Exception($result['message']);
+        }
         $decryptedData = openssl_decrypt($data, 'AES-256-CBC', $this->passphrase, 0, $this->iv);
 
         return json_decode($decryptedData, true);
@@ -107,9 +161,9 @@ class TwentyFourService
         return json_decode($decryptedData, true);
     }
 
-    public function getAddr()
+    public function getAddr($sido = null, $gugun = null)
     {
-        $json = json_encode(["sido" => "서울"], JSON_UNESCAPED_UNICODE);
+        $json = json_encode(["sido" => $sido, "gugun" => $gugun], JSON_UNESCAPED_UNICODE);
         $json = $this->pkcs5Pad($json);
         $data = openssl_encrypt($json, 'AES-256-CBC', $this->passphrase, 0, $this->iv);
         $params = [
@@ -121,6 +175,23 @@ class TwentyFourService
             'call24-api-key' => $this->apiKey
         ])->post($this->apiUrl . '/order/addr', $params);
 
+
+        $data = $response['data'];
+        $decryptedData = openssl_decrypt($data, 'AES-256-CBC', $this->passphrase, 0, $this->iv);
+
+        return json_decode($decryptedData, true);
+    }
+
+    public function getOrderAll()
+    {
+        $params = [
+            "data" => ''
+        ];
+
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'call24-api-key' => $this->apiKey
+        ])->post($this->apiUrl . '/order/getOrderAll', $params);
 
         $data = $response['data'];
         $decryptedData = openssl_decrypt($data, 'AES-256-CBC', $this->passphrase, 0, $this->iv);

@@ -24,7 +24,9 @@ class TestTwentyFour extends Command
     {
         // $data = (new TwentyFourService)->getCarTon();
         // $data = (new TwentyFourService)->getCarType();
-        $data = (new TwentyFourService)->getAddr();
+        $data = (new TwentyFourService)->getAddr('서울', '성북');
+        // $data = (new TwentyFourService)->getOrderAll();
+        
         Log::debug($data);
     }
 }
