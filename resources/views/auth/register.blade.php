@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $title }} | Andis Dev</title>
+    <title>{{ $title }} | TMS </title>
 
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -23,7 +23,7 @@
     <div class="register-box">
         <div class="card card-outline card-primary">
             <div class="card-header text-center">
-                <a href="/" class="h1"><b>Andis</b> Dev</a>
+                <a href="/" class="h1"><b>TMS</b></a>
             </div>
             <div class="card-body">
                 <p class="login-box-msg">Register a new membership</p>
