@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->string('twentyfour_error_msg')->after('twentyfour_order_no');
+            $table->string('twentyfour_error_msg')->after('twentyfour_order_no')->nullable();
         });
     }
 
