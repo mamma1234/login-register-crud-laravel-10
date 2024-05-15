@@ -33,6 +33,10 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             Alert::success('Success', 'Login success !');
+
+            $userId = Auth::id();
+            Log::debug('userId'. $userId);
+
             return redirect()->intended('/dashboard');
         } else {
             Alert::error('Error', 'Login failed !');

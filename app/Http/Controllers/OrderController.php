@@ -16,6 +16,7 @@ class OrderController extends Controller
      */
     public function index()
     {
+        $userId = Auth::id();
         $orders = Order::leftjoin('dispatches', 'dispatches.order_id', 'orders.id')
             ->select([
                 'orders.*',
@@ -24,6 +25,7 @@ class OrderController extends Controller
                 'dispatches.car_type as dispatch_car_type',
                 'dispatches.car_load_option as dispatch_car_load_option'
             ])
+            ->where('orders.user_id', $userId)
             ->get();
 
         // Log::debug($orders);
@@ -58,7 +60,9 @@ class OrderController extends Controller
         ]);
 
         Log::debug($request->all());
-        $order = Order::create($request->all());
+        
+        $userId = Auth::id();
+        $order = Order::create(array_merge($request->all(), ['user_id' => $userId]));
 
         try {
             $response = (new TwentyFourService)->setOrder($order->id);
