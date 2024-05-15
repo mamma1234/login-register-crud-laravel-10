@@ -8,6 +8,7 @@ use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Log;
 use App\Services\TwentyFourService;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
